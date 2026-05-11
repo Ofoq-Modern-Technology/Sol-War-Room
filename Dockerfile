@@ -2,7 +2,7 @@
 # Stage 1 — Builder
 # Installs all workspace deps, builds the Vite frontend and esbuild backend.
 # ─────────────────────────────────────────────────────────────────────────────
-FROM node:24-alpine AS builder
+FROM node:24-slim AS builder
 
 RUN corepack enable && corepack prepare pnpm@10 --activate
 
