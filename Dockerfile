@@ -4,6 +4,11 @@
 # ─────────────────────────────────────────────────────────────────────────────
 FROM node:24-slim AS builder
 
+# Build tools needed by optional native modules (utf-8-validate, bufferutil, better-sqlite3)
+RUN apt-get update -qq && apt-get install -y --no-install-recommends \
+    python3 make g++ \
+  && rm -rf /var/lib/apt/lists/*
+
 RUN corepack enable && corepack prepare pnpm@10 --activate
 
 WORKDIR /workspace
