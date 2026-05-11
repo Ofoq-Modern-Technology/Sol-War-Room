@@ -1,4 +1,4 @@
-# SOL_WAR_ROOM
+# SOL_WAR_ROOM — Solana Trade Center
 
 A self-hosted, open-source Solana multi-wallet trading panel with a dark terminal UI.
 
@@ -30,11 +30,10 @@ Manage wallets, execute trades, run volume bots, snipe new pools, and monitor th
 Requires [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/).
 
 ```bash
-# 1. Create a data directory for the database
-mkdir -p solwarroom-data
+# 1. Download the compose file
+curl -O https://raw.githubusercontent.com/Ofoq-Modern-Technology/solana-trade-center/main/docker-compose.yml
 
-# 2. Run with Docker Compose
-curl -O https://raw.githubusercontent.com/Ofoq-Modern-Technology/Sol-War-Room/main/docker-compose.yml
+# 2. Start the container
 docker compose up -d
 
 # 3. Open in your browser
@@ -45,18 +44,18 @@ Or run without Compose:
 
 ```bash
 docker run -d \
-  --name solwarroom \
+  --name solana-trade-center \
   -p 8080:8080 \
   -v solwarroom-data:/data \
   -e DATABASE_PATH=/data/solwarroom.db \
-  ofoqmoderntechnology/sol-war-room:latest
+  ofoq/solana-trade-center:latest
 ```
 
 ---
 
 ### Option 2 — Standalone Binary (no Node.js required)
 
-Download the pre-built binary for your platform from the [latest release](https://github.com/Ofoq-Modern-Technology/Sol-War-Room/releases/latest).
+Download the pre-built binary for your platform from the [latest release](https://github.com/Ofoq-Modern-Technology/solana-trade-center/releases/latest).
 
 | Platform       | File                          |
 |----------------|-------------------------------|
@@ -71,8 +70,8 @@ Download the pre-built binary for your platform from the [latest release](https:
 chmod +x solwarroom-linux-x64
 PORT=8080 ./solwarroom-linux-x64
 
-# Windows
-solwarroom-win-x64.exe
+# Windows (PowerShell or CMD)
+.\solwarroom-win-x64.exe
 ```
 
 The binary is fully self-contained — no Node.js, no `npm install` needed. The SQLite database is created automatically in the current directory as `solwarroom.db`.
@@ -85,13 +84,13 @@ Requires Node.js ≥ 20 and [pnpm](https://pnpm.io).
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/Ofoq-Modern-Technology/Sol-War-Room.git
-cd Sol-War-Room
+git clone https://github.com/Ofoq-Modern-Technology/solana-trade-center.git
+cd solana-trade-center
 
 # 2. Install dependencies
 pnpm install
 
-# 3. Start in development mode (frontend + backend with hot reload)
+# 3. Start in development mode
 pnpm --filter @workspace/api-server run dev &
 pnpm --filter @workspace/sol-war run dev
 
@@ -104,15 +103,15 @@ node artifacts/api-server/dist/server.cjs
 
 ## Environment Variables
 
-| Variable               | Default                  | Description                                      |
-|------------------------|--------------------------|--------------------------------------------------|
-| `PORT`                 | `8080`                   | Port the server listens on                       |
-| `DATABASE_PATH`        | `./solwarroom.db`        | Path to the SQLite database file                 |
-| `NODE_ENV`             | `development`            | Set to `production` for the built release        |
-| `LICENSE_CHECK_ENABLED`| *(not set)*              | Set to `1` to enable the license gate            |
-| `LICENSE_SERVER_URL`   | `https://license.ofoq.om`| License server URL (only used when check is on)  |
+| Variable               | Default                   | Description                                      |
+|------------------------|---------------------------|--------------------------------------------------|
+| `PORT`                 | `8080`                    | Port the server listens on                       |
+| `DATABASE_PATH`        | `./solwarroom.db`         | Path to the SQLite database file                 |
+| `NODE_ENV`             | `development`             | Set to `production` for the built release        |
+| `LICENSE_CHECK_ENABLED`| *(not set)*               | Set to `1` to enable the license gate            |
+| `LICENSE_SERVER_URL`   | `https://license.ofoq.om` | License server URL (only used when check is on)  |
 
-By default the panel runs fully open — no license key required. If you want to monetise your own deployment, set `LICENSE_CHECK_ENABLED=1` and point `LICENSE_SERVER_URL` at your own [License Manager](https://github.com/Ofoq-Modern-Technology/License-Manager) instance.
+By default the panel runs fully open — no license key required. If you want to add a license gate to your own deployment, set `LICENSE_CHECK_ENABLED=1` and point `LICENSE_SERVER_URL` at your own [License Manager](https://github.com/Ofoq-Modern-Technology/License-Manager) instance.
 
 ---
 
@@ -137,8 +136,8 @@ Output is in `artifacts/api-server/dist/`.
 ## Building the Docker Image Locally
 
 ```bash
-docker build -t sol-war-room .
-docker run -p 8080:8080 -v $(pwd)/data:/data sol-war-room
+docker build -t ofoq/solana-trade-center .
+docker run -p 8080:8080 -v $(pwd)/data:/data ofoq/solana-trade-center
 ```
 
 ---

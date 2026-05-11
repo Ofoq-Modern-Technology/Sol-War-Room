@@ -6,10 +6,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-binaries:
-    name: Build Standalone Binaries
+  build-linux:
+    name: Build Linux Binaries
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,19 +27,77 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build all binaries
-        run: pnpm --filter @workspace/api-server run build:binary
+      - name: Build Linux binaries
+        run: pnpm --filter @workspace/api-server run build:binary linux
 
-      - name: List built artifacts
-        run: ls -lh artifacts/api-server/dist/
-
-      - name: Upload binaries to release
+      - name: Upload Linux binaries
         uses: softprops/action-gh-release@v2
         with:
           files: |
             artifacts/api-server/dist/solwarroom-linux-x64
             artifacts/api-server/dist/solwarroom-linux-arm64
-            artifacts/api-server/dist/solwarroom-win-x64.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-windows:
+    name: Build Windows Binary
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Windows binary
+        run: pnpm --filter @workspace/api-server run build:binary win
+
+      - name: Upload Windows binary
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/api-server/dist/solwarroom-win-x64.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-macos:
+    name: Build macOS Binaries
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build macOS binaries
+        run: pnpm --filter @workspace/api-server run build:binary mac
+
+      - name: Upload macOS binaries
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
             artifacts/api-server/dist/solwarroom-macos-x64
             artifacts/api-server/dist/solwarroom-macos-arm64
         env:

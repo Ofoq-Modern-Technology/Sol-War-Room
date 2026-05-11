@@ -1,7 +1,7 @@
 services:
   solwarroom:
-    image: ofoqmoderntechnology/sol-war-room:latest
-    container_name: solwarroom
+    image: ofoq/solana-trade-center:latest
+    container_name: solana-trade-center
     ports:
       - "8080:8080"
     volumes:

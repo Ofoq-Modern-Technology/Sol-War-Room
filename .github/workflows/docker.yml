@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/sol-war-room
+  IMAGE_NAME: ofoq/solana-trade-center
 
 jobs:
   build-push:

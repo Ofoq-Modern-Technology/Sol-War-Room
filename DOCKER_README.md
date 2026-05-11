@@ -1,4 +1,4 @@
-# SOL_WAR_ROOM
+# SOL_WAR_ROOM — Solana Trade Center
 
 A self-hosted, open-source Solana multi-wallet trading panel with a dark terminal UI.
 
@@ -11,8 +11,8 @@ Manage wallets, execute trades, run volume bots, snipe new pools, and monitor th
 ```yaml
 services:
   solwarroom:
-    image: ofoqmoderntechnology/sol-war-room:latest
-    container_name: solwarroom
+    image: ofoq/solana-trade-center:latest
+    container_name: solana-trade-center
     ports:
       - "8080:8080"
     volumes:
@@ -38,11 +38,11 @@ Then open [http://localhost:8080](http://localhost:8080).
 
 ```bash
 docker run -d \
-  --name solwarroom \
+  --name solana-trade-center \
   -p 8080:8080 \
   -v solwarroom-data:/data \
   -e DATABASE_PATH=/data/solwarroom.db \
-  ofoqmoderntechnology/sol-war-room:latest
+  ofoq/solana-trade-center:latest
 ```
 
 ## Environment Variables
@@ -68,4 +68,4 @@ The database is stored at `DATABASE_PATH` (default `/data/solwarroom.db`). Mount
 
 ## Source & Full Documentation
 
-[github.com/Ofoq-Modern-Technology/Sol-War-Room](https://github.com/Ofoq-Modern-Technology/Sol-War-Room)
+[github.com/Ofoq-Modern-Technology/solana-trade-center](https://github.com/Ofoq-Modern-Technology/solana-trade-center)

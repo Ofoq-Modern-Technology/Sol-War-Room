@@ -55,6 +55,3 @@ attached_assets/
 *.db
 *.db-shm
 *.db-wal
-
-# Lock file — regenerated per machine via pnpm install
-pnpm-lock.yaml
