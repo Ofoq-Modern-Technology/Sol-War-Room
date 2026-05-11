@@ -1,0 +1,42 @@
+import { Router, type IRouter } from "express";
+import healthRouter from "./health.js";
+import walletsRouter from "./wallets.js";
+import accountsRouter from "./accounts.js";
+import tokensRouter from "./tokens.js";
+import tradesRouter from "./trades.js";
+import volumeRouter from "./volume.js";
+import transactionsRouter from "./transactions.js";
+import settingsRouter from "./appSettings.js";
+import distributorRouter from "./distributor.js";
+import arbRouter from "./arb.js";
+import { sniperRouter } from "./sniper.js";
+import tokenLaunchRouter from "./tokenLaunch.js";
+import { radarRouter } from "./radar.js";
+import { dexscreenerRouter } from "./dexscreener.js";
+import tasksRouter from "./tasks.js";
+import authRouter from "./auth.js";
+import licenseRouter from "./license.js";
+import purchaseRouter from "./purchase.js";
+
+const router: IRouter = Router();
+
+router.use(healthRouter);
+router.use(walletsRouter);
+router.use(accountsRouter);
+router.use(tokensRouter);
+router.use(tradesRouter);
+router.use(volumeRouter);
+router.use(transactionsRouter);
+router.use(settingsRouter);
+router.use(distributorRouter);
+router.use(arbRouter);
+router.use(sniperRouter);
+router.use(tokenLaunchRouter);
+router.use(radarRouter);
+router.use(dexscreenerRouter);
+router.use(tasksRouter);
+router.use(authRouter);
+router.use(licenseRouter);
+router.use("/purchase", purchaseRouter);
+
+export default router;

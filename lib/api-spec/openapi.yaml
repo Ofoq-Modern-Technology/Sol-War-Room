@@ -1,0 +1,1547 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: Solana War Room API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: wallets
+    description: HD wallet management
+  - name: accounts
+    description: Derived wallet accounts
+  - name: tokens
+    description: Solana token info
+  - name: trades
+    description: Buy/sell trade execution
+  - name: volume
+    description: Volume generation jobs
+  - name: transactions
+    description: Transaction history
+  - name: settings
+    description: App settings
+  - name: distributor
+    description: Distributor wallet for funding/collecting accounts
+  - name: sniper
+    description: New pool sniper bots
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /wallets:
+    get:
+      operationId: listWallets
+      tags: [wallets]
+      summary: List all HD wallets
+      responses:
+        "200":
+          description: List of wallets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Wallet"
+    post:
+      operationId: createWallets
+      tags: [wallets]
+      summary: Generate N new HD wallets
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateWalletsRequest"
+      responses:
+        "201":
+          description: Created wallets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Wallet"
+
+  /wallets/{walletId}:
+    delete:
+      operationId: deleteWallet
+      tags: [wallets]
+      summary: Delete a wallet and its accounts
+      parameters:
+        - name: walletId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /wallets/{walletId}/accounts:
+    get:
+      operationId: listAccountsByWallet
+      tags: [accounts]
+      summary: List accounts for a wallet
+      parameters:
+        - name: walletId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Account"
+    post:
+      operationId: deriveAccounts
+      tags: [accounts]
+      summary: Derive N accounts from a wallet
+      parameters:
+        - name: walletId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeriveAccountsRequest"
+      responses:
+        "201":
+          description: Derived accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Account"
+
+  /accounts:
+    get:
+      operationId: listAllAccounts
+      tags: [accounts]
+      summary: List all accounts across all wallets
+      responses:
+        "200":
+          description: List of all accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Account"
+
+  /accounts/balances:
+    post:
+      operationId: refreshBalances
+      tags: [accounts]
+      summary: Refresh SOL balances for a list of account IDs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshBalancesRequest"
+      responses:
+        "200":
+          description: Updated accounts with balances
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Account"
+
+  /tokens/info:
+    post:
+      operationId: getTokenInfo
+      tags: [tokens]
+      summary: Get token info by mint address
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TokenInfoRequest"
+      responses:
+        "200":
+          description: Token info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenInfo"
+
+  /trades/buy:
+    post:
+      operationId: executeBuy
+      tags: [trades]
+      summary: Execute buy on selected accounts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BuyRequest"
+      responses:
+        "200":
+          description: Trade results per account
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TradeResult"
+
+  /trades/sell:
+    post:
+      operationId: executeSell
+      tags: [trades]
+      summary: Execute sell on selected accounts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SellRequest"
+      responses:
+        "200":
+          description: Trade results per account
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TradeResult"
+
+  /trades/positions:
+    get:
+      operationId: getPositions
+      tags: [trades]
+      summary: Get P&L positions for accounts on a mint
+      parameters:
+        - name: mintAddress
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: accountIds
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Comma-separated account IDs
+      responses:
+        "200":
+          description: P&L positions per account
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AccountPosition"
+
+  /volume/start:
+    post:
+      operationId: startVolumeJob
+      tags: [volume]
+      summary: Start a volume generation job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VolumeJobRequest"
+      responses:
+        "201":
+          description: Volume job created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolumeJob"
+
+  /volume/jobs:
+    get:
+      operationId: listVolumeJobs
+      tags: [volume]
+      summary: List all volume jobs
+      responses:
+        "200":
+          description: List of volume jobs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VolumeJob"
+
+  /volume/jobs/{jobId}/stop:
+    post:
+      operationId: stopVolumeJob
+      tags: [volume]
+      summary: Stop a running volume job
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Stopped
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolumeJob"
+
+  /arb/configs:
+    get:
+      operationId: listArbConfigs
+      tags: [arb]
+      summary: List all arb bot configurations
+      responses:
+        "200":
+          description: List of arb configs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ArbConfig"
+    post:
+      operationId: createArbConfig
+      tags: [arb]
+      summary: Create a new arb bot configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateArbConfigRequest"
+      responses:
+        "201":
+          description: Created arb config
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArbConfig"
+
+  /arb/configs/{id}:
+    delete:
+      operationId: deleteArbConfig
+      tags: [arb]
+      summary: Delete an arb config and its logs
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+
+  /arb/configs/{id}/start:
+    post:
+      operationId: startArbConfig
+      tags: [arb]
+      summary: Start the arb bot for a config
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartArbRequest"
+      responses:
+        "200":
+          description: Updated arb config
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArbConfig"
+
+  /arb/configs/{id}/stop:
+    post:
+      operationId: stopArbConfig
+      tags: [arb]
+      summary: Stop the arb bot for a config
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated arb config
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArbConfig"
+
+  /arb/configs/{id}/logs:
+    get:
+      operationId: getArbLogs
+      tags: [arb]
+      summary: Get recent logs for an arb config
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+      responses:
+        "200":
+          description: List of arb logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ArbLog"
+
+  /sniper/configs:
+    get:
+      operationId: listSniperConfigs
+      tags: [sniper]
+      summary: List all sniper configs
+      responses:
+        "200":
+          description: List of sniper configs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SniperConfig"
+    post:
+      operationId: createSniperConfig
+      tags: [sniper]
+      summary: Create a new sniper config
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSniperConfigRequest"
+      responses:
+        "201":
+          description: Created sniper config
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SniperConfig"
+
+  /sniper/configs/{id}:
+    delete:
+      operationId: deleteSniperConfig
+      tags: [sniper]
+      summary: Delete a sniper config
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /sniper/configs/{id}/start:
+    post:
+      operationId: startSniper
+      tags: [sniper]
+      summary: Start a sniper bot
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartSniperRequest"
+      responses:
+        "200":
+          description: Started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SniperConfig"
+
+  /sniper/configs/{id}/stop:
+    post:
+      operationId: stopSniper
+      tags: [sniper]
+      summary: Stop a sniper bot
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Stopped
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SniperConfig"
+
+  /sniper/configs/{id}/trades:
+    get:
+      operationId: getSniperTrades
+      tags: [sniper]
+      summary: Get trade history for a sniper config
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: List of sniper trades
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SniperTrade"
+
+  /sniper/trades:
+    get:
+      operationId: listAllSniperTrades
+      tags: [sniper]
+      summary: Get all sniper trade history
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: List of sniper trades
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SniperTrade"
+
+  /transactions:
+    get:
+      operationId: listTransactions
+      tags: [transactions]
+      summary: List transaction history
+      parameters:
+        - name: accountId
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: Transaction history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get app settings
+      responses:
+        "200":
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
+    put:
+      operationId: updateSettings
+      tags: [settings]
+      summary: Update app settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SettingsUpdateRequest"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
+
+  /distributor/wallet:
+    get:
+      operationId: getDistributorWallet
+      tags: [distributor]
+      summary: Get distributor wallet info
+      responses:
+        "200":
+          description: Distributor wallet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DistributorWallet"
+        "404":
+          description: No distributor wallet found
+    post:
+      operationId: createDistributorWallet
+      tags: [distributor]
+      summary: Create a new distributor wallet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDistributorWalletBody"
+      responses:
+        "201":
+          description: Created distributor wallet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DistributorWallet"
+
+  /distributor/wallet/balance:
+    post:
+      operationId: refreshDistributorBalance
+      tags: [distributor]
+      summary: Refresh distributor wallet SOL balance
+      responses:
+        "200":
+          description: Updated wallet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DistributorWallet"
+
+  /distributor/send:
+    post:
+      operationId: distributorSend
+      tags: [distributor]
+      summary: Send SOL from distributor wallet to multiple accounts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DistributorSendBody"
+      responses:
+        "200":
+          description: List of transfer results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DistributorOpResult"
+
+  /distributor/collect:
+    post:
+      operationId: distributorCollect
+      tags: [distributor]
+      summary: Collect SOL from selected accounts back to distributor wallet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DistributorCollectBody"
+      responses:
+        "200":
+          description: List of collection results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DistributorOpResult"
+
+  /wallets/export:
+    post:
+      operationId: exportWallets
+      tags: [wallets]
+      summary: Export all wallets with decrypted mnemonics and private keys
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExportWalletsBody"
+      responses:
+        "200":
+          description: Exported wallet data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ExportedWallet"
+        "401":
+          description: Invalid password for one or more wallets
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required: [success, message]
+
+    Wallet:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        encryptedMnemonic:
+          type: string
+        accountCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, name, encryptedMnemonic, accountCount, createdAt]
+
+    CreateWalletsRequest:
+      type: object
+      properties:
+        count:
+          type: integer
+          minimum: 1
+          maximum: 50
+        password:
+          type: string
+          description: Password used to encrypt the mnemonic on the server
+      required: [count, password]
+
+    Account:
+      type: object
+      properties:
+        id:
+          type: integer
+        walletId:
+          type: integer
+        walletName:
+          type: string
+        name:
+          type: string
+        publicKey:
+          type: string
+        encryptedPrivateKey:
+          type: string
+        hdPath:
+          type: string
+        hdIndex:
+          type: integer
+        solBalance:
+          type: number
+          nullable: true
+        selected:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, walletId, walletName, name, publicKey, encryptedPrivateKey, hdPath, hdIndex, selected, createdAt]
+
+    DeriveAccountsRequest:
+      type: object
+      properties:
+        count:
+          type: integer
+          minimum: 1
+          maximum: 100
+        password:
+          type: string
+          description: Password to decrypt mnemonic and re-encrypt private keys
+      required: [count, password]
+
+    RefreshBalancesRequest:
+      type: object
+      properties:
+        accountIds:
+          type: array
+          items:
+            type: integer
+      required: [accountIds]
+
+    TokenInfo:
+      type: object
+      properties:
+        mintAddress:
+          type: string
+        name:
+          type: string
+        symbol:
+          type: string
+        decimals:
+          type: integer
+        price:
+          type: number
+          nullable: true
+        marketCap:
+          type: number
+          nullable: true
+        liquidity:
+          type: number
+          nullable: true
+        volume24h:
+          type: number
+          nullable: true
+        dex:
+          type: string
+          description: "pump_fun | raydium | orca | jupiter"
+        graduated:
+          type: boolean
+          nullable: true
+        logoUri:
+          type: string
+          nullable: true
+      required: [mintAddress, name, symbol, decimals, dex]
+
+    TokenInfoRequest:
+      type: object
+      properties:
+        mintAddress:
+          type: string
+      required: [mintAddress]
+
+    BuyRequest:
+      type: object
+      properties:
+        mintAddress:
+          type: string
+        accountIds:
+          type: array
+          items:
+            type: integer
+        amountSol:
+          type: number
+          description: Fixed SOL amount per account (use when not using random range)
+        minAmountSol:
+          type: number
+          description: Min SOL amount for random range mode
+        maxAmountSol:
+          type: number
+          description: Max SOL amount for random range mode
+        slippageBps:
+          type: integer
+          default: 500
+          description: Slippage in basis points
+        useJito:
+          type: boolean
+          default: true
+        jitoTipLamports:
+          type: integer
+          default: 10000
+        password:
+          type: string
+          description: Password to decrypt private keys
+        delayMs:
+          type: integer
+          default: 0
+          description: Delay between each account transaction in ms
+      required: [mintAddress, accountIds, password]
+
+    AccountPosition:
+      type: object
+      properties:
+        accountId:
+          type: integer
+        accountName:
+          type: string
+        publicKey:
+          type: string
+        totalSolIn:
+          type: number
+        buyCount:
+          type: integer
+        tokenBalance:
+          type: number
+        currentValueSol:
+          type: number
+        estimatedFees:
+          type: number
+        pnlSol:
+          type: number
+        pnlPct:
+          type: number
+      required: [accountId, accountName, publicKey, totalSolIn, buyCount, tokenBalance, currentValueSol, estimatedFees, pnlSol, pnlPct]
+
+    SellRequest:
+      type: object
+      properties:
+        mintAddress:
+          type: string
+        accountIds:
+          type: array
+          items:
+            type: integer
+        percentToSell:
+          type: integer
+          default: 100
+          description: Percentage of token balance to sell (1-100)
+        slippageBps:
+          type: integer
+          default: 500
+        useJito:
+          type: boolean
+          default: true
+        jitoTipLamports:
+          type: integer
+          default: 10000
+        password:
+          type: string
+        delayMs:
+          type: integer
+          default: 0
+      required: [mintAddress, accountIds, percentToSell, password]
+
+    TradeResult:
+      type: object
+      properties:
+        accountId:
+          type: integer
+        accountName:
+          type: string
+        publicKey:
+          type: string
+        status:
+          type: string
+          enum: [success, failed, pending]
+        txSignature:
+          type: string
+          nullable: true
+        error:
+          type: string
+          nullable: true
+        amountIn:
+          type: number
+          nullable: true
+        amountOut:
+          type: number
+          nullable: true
+      required: [accountId, accountName, publicKey, status]
+
+    VolumeJobRequest:
+      type: object
+      properties:
+        mintAddress:
+          type: string
+        accountIds:
+          type: array
+          items:
+            type: integer
+        minAmountSol:
+          type: number
+          description: Min SOL per trade
+        maxAmountSol:
+          type: number
+          description: Max SOL per trade
+        minDelayMs:
+          type: integer
+          description: Min delay between trades in ms
+        maxDelayMs:
+          type: integer
+          description: Max delay between trades in ms
+        totalDurationMinutes:
+          type: integer
+          description: How long to run the job in minutes
+        slippageBps:
+          type: integer
+          default: 500
+        useJito:
+          type: boolean
+          default: true
+        jitoTipLamports:
+          type: integer
+          default: 10000
+        password:
+          type: string
+        pattern:
+          type: string
+          enum: [random, wash, ladder]
+          default: random
+          description: "random=random buys/sells between accounts, wash=buy then sell same account, ladder=incremental buys"
+      required: [mintAddress, accountIds, minAmountSol, maxAmountSol, minDelayMs, maxDelayMs, totalDurationMinutes, password]
+
+    VolumeJob:
+      type: object
+      properties:
+        id:
+          type: integer
+        mintAddress:
+          type: string
+        tokenSymbol:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [running, stopped, completed, failed]
+        pattern:
+          type: string
+        totalTrades:
+          type: integer
+        successfulTrades:
+          type: integer
+        failedTrades:
+          type: integer
+        totalVolumeSol:
+          type: number
+        startedAt:
+          type: string
+          format: date-time
+        stoppedAt:
+          type: string
+          format: date-time
+          nullable: true
+        endsAt:
+          type: string
+          format: date-time
+          nullable: true
+      required: [id, mintAddress, status, pattern, totalTrades, successfulTrades, failedTrades, totalVolumeSol, startedAt]
+
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: integer
+        accountId:
+          type: integer
+        accountName:
+          type: string
+        walletName:
+          type: string
+        type:
+          type: string
+          enum: [buy, sell, volume]
+        mintAddress:
+          type: string
+        tokenSymbol:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [success, failed, pending]
+        txSignature:
+          type: string
+          nullable: true
+        amountIn:
+          type: number
+          nullable: true
+        amountOut:
+          type: number
+          nullable: true
+        error:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, accountId, accountName, walletName, type, mintAddress, status, createdAt]
+
+    Settings:
+      type: object
+      properties:
+        rpcEndpoint:
+          type: string
+        heliusApiKey:
+          type: string
+          nullable: true
+        jupiterApiKey:
+          type: string
+          nullable: true
+        jitoEndpoint:
+          type: string
+        defaultSlippageBps:
+          type: integer
+        defaultJitoTipLamports:
+          type: integer
+        defaultDelayMs:
+          type: integer
+      required: [rpcEndpoint, jitoEndpoint, defaultSlippageBps, defaultJitoTipLamports, defaultDelayMs]
+
+    SettingsUpdateRequest:
+      type: object
+      properties:
+        rpcEndpoint:
+          type: string
+        heliusApiKey:
+          type: string
+          nullable: true
+        jupiterApiKey:
+          type: string
+          nullable: true
+        jitoEndpoint:
+          type: string
+        defaultSlippageBps:
+          type: integer
+        defaultJitoTipLamports:
+          type: integer
+        defaultDelayMs:
+          type: integer
+
+    DistributorWallet:
+      type: object
+      properties:
+        id:
+          type: integer
+        publicKey:
+          type: string
+        hdPath:
+          type: string
+        solBalance:
+          type: number
+          nullable: true
+        createdAt:
+          type: string
+      required: [id, publicKey, hdPath, createdAt]
+
+    CreateDistributorWalletBody:
+      type: object
+      properties:
+        password:
+          type: string
+          description: Password used to encrypt the mnemonic
+      required: [password]
+
+    DistributorSendBody:
+      type: object
+      properties:
+        password:
+          type: string
+          description: Distributor wallet decryption password
+        accountIds:
+          type: array
+          items:
+            type: integer
+          description: Target account IDs to send SOL to
+        amountSol:
+          type: number
+          description: Amount of SOL to send to each account
+      required: [password, accountIds, amountSol]
+
+    DistributorCollectBody:
+      type: object
+      properties:
+        password:
+          type: string
+          description: Accounts decryption password (same password used when deriving)
+        accountIds:
+          type: array
+          items:
+            type: integer
+          description: Account IDs to collect SOL from
+        leaveRentSol:
+          type: number
+          description: SOL to leave behind for rent exemption (default 0.002)
+      required: [password, accountIds]
+
+    DistributorOpResult:
+      type: object
+      properties:
+        signature:
+          type: string
+        fromAddress:
+          type: string
+        toAddress:
+          type: string
+        amountSol:
+          type: number
+        success:
+          type: boolean
+        error:
+          type: string
+          nullable: true
+      required: [fromAddress, toAddress, amountSol, success]
+
+    ExportWalletsBody:
+      type: object
+      properties:
+        password:
+          type: string
+          description: Decryption password for all wallets
+      required: [password]
+
+    ExportedWallet:
+      type: object
+      properties:
+        walletId:
+          type: integer
+        walletName:
+          type: string
+        mnemonic:
+          type: string
+        accounts:
+          type: array
+          items:
+            type: object
+            properties:
+              accountId:
+                type: integer
+              name:
+                type: string
+              publicKey:
+                type: string
+              privateKeyBase58:
+                type: string
+              hdPath:
+                type: string
+              hdIndex:
+                type: integer
+            required: [accountId, name, publicKey, privateKeyBase58, hdPath, hdIndex]
+      required: [walletId, walletName, mnemonic, accounts]
+
+    ArbConfig:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        accountId:
+          type: integer
+        accountName:
+          type: string
+          nullable: true
+        publicKey:
+          type: string
+          nullable: true
+        walletName:
+          type: string
+          nullable: true
+        mintAddress:
+          type: string
+        tokenSymbol:
+          type: string
+          nullable: true
+        inputAmountSol:
+          type: number
+        minProfitSol:
+          type: number
+        jitoTipLamports:
+          type: integer
+        scanIntervalMs:
+          type: integer
+        slippageBps:
+          type: integer
+        targetDexes:
+          type: array
+          items:
+            type: string
+          description: Jupiter DEX labels to scan (e.g. "Raydium", "Orca", "Whirlpool")
+        status:
+          type: string
+        totalArbs:
+          type: integer
+        totalProfitSol:
+          type: number
+        isRunning:
+          type: boolean
+        startedAt:
+          type: string
+          nullable: true
+        stoppedAt:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required: [id, name, accountId, mintAddress, inputAmountSol, minProfitSol, jitoTipLamports, scanIntervalMs, slippageBps, targetDexes, status, totalArbs, totalProfitSol, isRunning, createdAt]
+
+    ArbLog:
+      type: object
+      properties:
+        id:
+          type: integer
+        configId:
+          type: integer
+        type:
+          type: string
+        inputSol:
+          type: number
+        outputSol:
+          type: number
+          nullable: true
+        profitSol:
+          type: number
+          nullable: true
+        status:
+          type: string
+        buyDex:
+          type: string
+          nullable: true
+        sellDex:
+          type: string
+          nullable: true
+        buyTxSignature:
+          type: string
+          nullable: true
+        sellTxSignature:
+          type: string
+          nullable: true
+        error:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required: [id, configId, type, inputSol, status, createdAt]
+
+    CreateArbConfigRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        accountId:
+          type: integer
+        mintAddress:
+          type: string
+        tokenSymbol:
+          type: string
+        inputAmountSol:
+          type: number
+        minProfitSol:
+          type: number
+          default: 0.001
+        jitoTipLamports:
+          type: integer
+          default: 10000
+        scanIntervalMs:
+          type: integer
+          default: 5000
+        slippageBps:
+          type: integer
+          default: 100
+        targetDexes:
+          type: array
+          items:
+            type: string
+          description: DEX labels to scan. Defaults to Raydium, Raydium CLMM, Orca, Whirlpool, Meteora DLMM, PumpSwap
+      required: [name, accountId, mintAddress, inputAmountSol]
+
+    StartArbRequest:
+      type: object
+      properties:
+        password:
+          type: string
+      required: [password]
+
+    SniperConfig:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        accountIds:
+          type: array
+          items:
+            type: integer
+        solPerAccount:
+          type: number
+        maxBuySlippageBps:
+          type: integer
+        minLiquiditySol:
+          type: number
+        exitStrategy:
+          type: string
+          enum: [timer, multiplier, manual]
+        exitTimerSeconds:
+          type: integer
+        exitMultiplier:
+          type: number
+        useJito:
+          type: boolean
+        jitoTipLamports:
+          type: integer
+        targetDexes:
+          type: array
+          items:
+            type: string
+        maxSnipesPerPool:
+          type: integer
+        status:
+          type: string
+          enum: [idle, running]
+        totalSnipes:
+          type: integer
+        totalPnlSol:
+          type: number
+        startedAt:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required: [id, name, accountIds, solPerAccount, maxBuySlippageBps, minLiquiditySol, exitStrategy, exitTimerSeconds, exitMultiplier, useJito, jitoTipLamports, targetDexes, maxSnipesPerPool, status, totalSnipes, totalPnlSol, createdAt]
+
+    SniperTrade:
+      type: object
+      properties:
+        id:
+          type: integer
+        configId:
+          type: integer
+        mintAddress:
+          type: string
+        tokenSymbol:
+          type: string
+          nullable: true
+        tokenName:
+          type: string
+          nullable: true
+        dex:
+          type: string
+        accountId:
+          type: integer
+        solSpent:
+          type: number
+        tokensReceived:
+          type: number
+          nullable: true
+        solReceived:
+          type: number
+          nullable: true
+        pnlSol:
+          type: number
+          nullable: true
+        status:
+          type: string
+        buyTxSignature:
+          type: string
+          nullable: true
+        sellTxSignature:
+          type: string
+          nullable: true
+        error:
+          type: string
+          nullable: true
+        detectedAt:
+          type: string
+        boughtAt:
+          type: string
+          nullable: true
+        soldAt:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required: [id, configId, mintAddress, dex, accountId, solSpent, status, detectedAt, createdAt]
+
+    CreateSniperConfigRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        accountIds:
+          type: array
+          items:
+            type: integer
+        solPerAccount:
+          type: number
+          default: 0.1
+        maxBuySlippageBps:
+          type: integer
+          default: 1500
+        minLiquiditySol:
+          type: number
+          default: 1.0
+        exitStrategy:
+          type: string
+          enum: [timer, multiplier, manual]
+          default: timer
+        exitTimerSeconds:
+          type: integer
+          default: 300
+        exitMultiplier:
+          type: number
+          default: 2.0
+        useJito:
+          type: boolean
+          default: true
+        jitoTipLamports:
+          type: integer
+          default: 100000
+        targetDexes:
+          type: array
+          items:
+            type: string
+          default: ["raydium", "raydium_cpmm", "pumpfun"]
+        maxSnipesPerPool:
+          type: integer
+          default: 1
+      required: [name, accountIds, solPerAccount]
+
+    StartSniperRequest:
+      type: object
+      properties:
+        password:
+          type: string
+      required: [password]

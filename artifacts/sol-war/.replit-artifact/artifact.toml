@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Solana War Room"
+version = "1.0.0"
+id = "artifacts/sol-war"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+localPort = 23340
+name = "web"
+paths = ["/"]
+
+[services.development]
+run = "pnpm --filter @workspace/sol-war run dev"
+
+[services.env]
+PORT = "23340"
+BASE_PATH = "/"
+
+[services.production]
+build = ["pnpm", "--filter", "@workspace/sol-war", "run", "build"]
+publicDir = "artifacts/sol-war/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"

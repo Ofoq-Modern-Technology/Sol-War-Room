@@ -1,0 +1,12 @@
+**/node_modules
+**/dist
+**/.git
+**/*.db
+**/*.db-shm
+**/*.db-wal
+artifacts/mockup-sandbox
+attached_assets
+.replit
+replit.md
+.local
+*.log

@@ -1,0 +1,15 @@
+packages:
+  "framer-motion": "For page transitions and layout animations"
+  "zustand": "For global state management of selected accounts"
+  "date-fns": "For date formatting"
+  "@hookform/resolvers": "For form validation"
+  "react-hook-form": "For form state"
+  "zod": "For schema validation"
+  "clsx": "For class merging"
+  "tailwind-merge": "For class merging"
+
+images: []
+
+notes:
+  - "Using auto-generated API hooks from @workspace/api-client-react"
+  - "App follows a dark mode hacker/terminal aesthetic for pro traders"

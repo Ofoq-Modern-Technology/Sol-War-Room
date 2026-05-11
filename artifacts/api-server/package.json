@@ -1,0 +1,43 @@
+{
+  "name": "@workspace/api-server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "NODE_ENV=development SKIP_LICENSE_CHECK=1 tsx ./src/index.ts",
+    "build": "tsx ./build.ts",
+    "build:binary": "tsx ./build.ts --binary",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@noble/ed25519": "^3.0.1",
+    "@noble/hashes": "^2.0.1",
+    "@solana/web3.js": "^1.98.4",
+    "@types/ws": "^8.18.1",
+    "@workspace/api-zod": "workspace:*",
+    "@workspace/db": "workspace:*",
+    "bcryptjs": "^3.0.3",
+    "bip39": "^3.1.0",
+    "bs58": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2",
+    "drizzle-orm": "catalog:",
+    "ed25519-hd-key": "^1.3.0",
+    "express": "^5",
+    "jsonwebtoken": "^9.0.3",
+    "tweetnacl": "^1.0.3",
+    "ws": "^8.19.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "catalog:",
+    "@yao-pkg/pkg": "^6.18.2",
+    "esbuild": "^0.27.3",
+    "tsx": "catalog:"
+  }
+}

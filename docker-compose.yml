@@ -1,0 +1,17 @@
+services:
+  solwarroom:
+    image: ofoqmoderntechnology/sol-war-room:latest
+    container_name: solwarroom
+    ports:
+      - "8080:8080"
+    volumes:
+      - solwarroom-data:/data
+    environment:
+      PORT: "8080"
+      DATABASE_PATH: /data/solwarroom.db
+      # LICENSE_CHECK_ENABLED: "1"       # uncomment to enable license gate
+      # LICENSE_SERVER_URL: "https://..."  # required when license check is enabled
+    restart: unless-stopped
+
+volumes:
+  solwarroom-data:
